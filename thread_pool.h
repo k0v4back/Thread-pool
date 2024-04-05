@@ -5,10 +5,9 @@
 #include <vector>
 
 #include "task.h"
+#include <queue.h>
 
 class ThreadPoll {
-private:
-    std::vector<std::thread> workers_;
 public:
     explicit ThreadPoll(size_t workers);
     ~ThreadPoll();
@@ -19,4 +18,12 @@ public:
     void Submit(Task task);
     void Wait();
     void Stop();
+
+private:
+    void StartWorkerThread(size_t workers); //Starting a thread pool
+    void WorkerRoutine();                   //Procedure for each execution thread
+
+private:
+    std::vector<std::thread> workers_;
+    UnboundedBlockingMPMCQueue<Task> tasks_;
 };
