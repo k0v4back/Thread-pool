@@ -10,9 +10,9 @@ int main() {
     size_t shared_counter = 0;
 
     for (size_t i = 0; i < 100500; i++) {
-        pool.Submit([&]() {
-            shared_counter++;
-        });
+        //pool.Submit([&]() {
+        //    shared_counter++;
+        //});
     }
 
     pool.Wait();
