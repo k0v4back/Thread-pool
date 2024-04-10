@@ -1,8 +1,5 @@
 #pragma once
 
-#include <iostream>
+#include <functional>
 
-class Task {
-public:
-    Task();
-};
+using Task = std::function<void()>;

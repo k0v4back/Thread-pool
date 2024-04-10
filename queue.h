@@ -8,11 +8,34 @@
 template <typename T>
 class UnboundedBlockingMPMCQueue {
 public:
-    void Put(T value);
-    T Take();
+    void Put(T value) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        buffer_.push_back(std::move(value));
+
+        //Put one element in queue and woke up one thread,
+        //which may have been waiting for an element
+        not_empty_cv_.notify_one();
+    }
+
+    T Take() {
+        std::unique_lock<std::mutex> lock(mutex_);
+
+        while (buffer_.empty()) {
+            //Unlock mutex and wait until the queue is not empty
+            not_empty_cv_.wait(lock);
+        }
+
+        return TakeLocked();
+    }
 
 private:
-    T TakeLocked(); //Retrieves an item from the head of the queue
+    //Retrieves an item from the head of the queue
+    T TakeLocked() {
+        assert(!buffer_.empty());
+        T front { std::move(buffer_.front()) };
+        buffer_.pop_back();
+        return front;
+    }
 
 private:
     std::deque<T> buffer_;

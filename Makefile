@@ -10,10 +10,10 @@ CFLAGS = -Wall
 all: $(TARGET)	
 
 $(TARGET): $(OBJ)
-		$(CC) $^ -o $@
+		$(CC) $^ -o $@ -lpthread
 
 %.o: %.cpp
-		$(CC) -std=c++14 -g -c $< -lpthread -o $@ $(CFLAGS)
+		$(CC) -std=c++14 -c $< -o $@ $(CFLAGS)
 
 clean:
 		rm -f $(GENERAT)

@@ -4,7 +4,6 @@
 #include "thread_pool.h"
 
 #include <thread>
-
 using namespace std::chrono_literals;
 
 ThreadPoll::ThreadPoll(size_t workers) {
@@ -29,7 +28,7 @@ void ThreadPoll::Stop() {
 
 void ThreadPoll::StartWorkerThread(size_t workers) {
     for (size_t i = 0; i < workers; i++) {
-        workers_.emplace_back([&](){
+        workers_.emplace_back([this](){
             WorkerRoutine();
         });
     }
@@ -38,6 +37,6 @@ void ThreadPoll::StartWorkerThread(size_t workers) {
 void ThreadPoll::WorkerRoutine() {
     while (true) {
         auto task = tasks_.Take();
-        //task(); // TODO exception
+        task(); // TODO exception
     }
 }
