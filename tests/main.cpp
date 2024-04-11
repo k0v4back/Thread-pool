@@ -21,8 +21,8 @@ int main() {
     pool.Wait();
 
     std::cout << "shared_counter = " << shared_counter << std::endl;
-    //std::this_thread::sleep_for(1s);
-    //std::cout << "shared_counter = " << shared_counter << std::endl;
+    std::this_thread::sleep_for(1s);
+    std::cout << "shared_counter = " << shared_counter << std::endl;
 
     return 0;
 }

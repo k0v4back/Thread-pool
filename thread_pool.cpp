@@ -7,7 +7,13 @@
 using namespace std::chrono_literals;
 
 ThreadPoll::ThreadPoll(size_t workers) {
-    StartWorkerThread(workers);
+    //Start worker threads
+    workers_.reserve(workers);
+    for (size_t i = 0; i < workers; i++) {
+        workers_.emplace_back([this](){
+            WorkerRoutine();
+        });
+    }
 }
 
 ThreadPoll::~ThreadPoll() {
@@ -24,14 +30,6 @@ void ThreadPoll::Wait() {
 
 void ThreadPoll::Stop() {
     assert(workers_.empty());
-}
-
-void ThreadPoll::StartWorkerThread(size_t workers) {
-    for (size_t i = 0; i < workers; i++) {
-        workers_.emplace_back([this](){
-            WorkerRoutine();
-        });
-    }
 }
 
 void ThreadPoll::WorkerRoutine() {

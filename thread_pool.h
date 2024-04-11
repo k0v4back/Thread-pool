@@ -20,8 +20,7 @@ public:
     void Stop();
 
 private:
-    void StartWorkerThread(size_t workers); //Starting a thread pool
-    void WorkerRoutine();                   //Procedure for each execution thread
+    void WorkerRoutine();   //Procedure for each execution thread
 
 private:
     std::vector<std::thread> workers_;

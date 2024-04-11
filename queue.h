@@ -29,11 +29,12 @@ public:
     }
 
 private:
-    //Retrieves an item from the head of the queue
+    //Retrieves an item from the beginning of the queue
+    //assuming that the queue is not empty
     T TakeLocked() {
         assert(!buffer_.empty());
-        T front { std::move(buffer_.front()) };
-        buffer_.pop_back();
+        T front = std::move(buffer_.front());
+        buffer_.pop_front();
         return front;
     }
 
