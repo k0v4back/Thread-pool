@@ -3,9 +3,6 @@
 
 #include "../thread_pool.h"
 
-#include <thread>
-using namespace std::chrono_literals;
-
 int main() {
     //Create pool of 4 thread
     ThreadPoll pool {4};
@@ -18,11 +15,11 @@ int main() {
         });
     }
 
-    pool.Wait();
+    pool.WaitAll();
 
     std::cout << "shared_counter = " << shared_counter << std::endl;
-    std::this_thread::sleep_for(1s);
-    std::cout << "shared_counter = " << shared_counter << std::endl;
+    //std::this_thread::sleep_for(1s);
+    //std::cout << "shared_counter = " << shared_counter << std::endl;
 
     return 0;
 }

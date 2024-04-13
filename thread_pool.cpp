@@ -3,9 +3,6 @@
 
 #include "thread_pool.h"
 
-#include <thread>
-using namespace std::chrono_literals;
-
 ThreadPoll::ThreadPoll(size_t workers) {
     //Start worker threads
     workers_.reserve(workers);
@@ -17,15 +14,31 @@ ThreadPoll::ThreadPoll(size_t workers) {
 }
 
 ThreadPoll::~ThreadPoll() {
-    assert(workers_.empty());
+    for (size_t i = 0; i < workers_.size(); i++) {
+        tasks_.GetNotEmptyCv().notify_all();
+        workers_[i].join();
+    }
 }
 
 void ThreadPoll::Submit(Task task) {
     tasks_.Put(std::move(task));
 }
 
-void ThreadPoll::Wait() {
-    std::this_thread::sleep_for(3s); //need to change
+void ThreadPoll::WaitAll() {
+    std::unique_lock<std::mutex> lock(thread_pool_mutex_);
+
+    tasks_.GetCompletedTaskIDsCv().wait(lock, [this]()->bool {
+        std::lock_guard<std::mutex> task_lock(tasks_.GetQueueMutex());
+        return tasks_.GetQueueBuffer().empty() && tasks_.GetLastIdx() == completed_task_ids_.size();
+    });
+}
+
+void ThreadPoll::Wait(size_t task_id) {
+    std::unique_lock<std::mutex> lock(thread_pool_mutex_);
+
+    tasks_.GetCompletedTaskIDsCv().wait(lock, [this, task_id]()->bool {
+        return completed_task_ids_.find(task_id) != completed_task_ids_.end(); 
+    });
 }
 
 void ThreadPoll::Stop() {

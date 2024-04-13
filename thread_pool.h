@@ -3,6 +3,8 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <atomic>
+#include <unordered_set>
 
 #include "task.h"
 #include "queue.h"
@@ -16,7 +18,8 @@ public:
     ThreadPoll& operator=(const ThreadPoll&) = delete;
 
     void Submit(Task task);
-    void Wait();
+    void WaitAll();
+    void Wait(size_t task_id);
     void Stop();
 
 private:
@@ -25,4 +28,7 @@ private:
 private:
     std::vector<std::thread> workers_;
     UnboundedBlockingMPMCQueue<Task> tasks_;
+    std::atomic<bool> end_flag_ { false }; //Flag end of thread pool work
+    std::unordered_set<int64_t> completed_task_ids_; 
+    std::mutex thread_pool_mutex_;
 };
