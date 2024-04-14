@@ -17,7 +17,8 @@ public:
     ThreadPoll(const ThreadPoll&) = delete;
     ThreadPoll& operator=(const ThreadPoll&) = delete;
 
-    void Submit(Task task);
+    size_t Submit(Task task);
+    bool TaskComplete(size_t task_id);
     void WaitAll();
     void Wait(size_t task_id);
     void Stop();
@@ -29,6 +30,6 @@ private:
     std::vector<std::thread> workers_;
     UnboundedBlockingMPMCQueue<Task> tasks_;
     std::atomic<bool> end_flag_ { false }; //Flag end of thread pool work
-    std::unordered_set<int64_t> completed_task_ids_; 
+    std::mutex completed_task_ids_mutex_; 
     std::mutex thread_pool_mutex_;
 };

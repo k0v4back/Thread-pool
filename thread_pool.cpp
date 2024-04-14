@@ -14,31 +14,30 @@ ThreadPoll::ThreadPoll(size_t workers) {
 }
 
 ThreadPoll::~ThreadPoll() {
+    end_flag_ = true;
     for (size_t i = 0; i < workers_.size(); i++) {
         tasks_.GetNotEmptyCv().notify_all();
         workers_[i].join();
     }
 }
 
-void ThreadPoll::Submit(Task task) {
-    tasks_.Put(std::move(task));
+size_t ThreadPoll::Submit(Task task) {
+    return tasks_.Put(std::move(task));
+}
+
+bool ThreadPoll::TaskComplete(size_t task_id) {
+    std::lock_guard<std::mutex> lock(completed_task_ids_mutex_);
+    return tasks_.TaskCompleteQueue(task_id);
 }
 
 void ThreadPoll::WaitAll() {
     std::unique_lock<std::mutex> lock(thread_pool_mutex_);
-
-    tasks_.GetCompletedTaskIDsCv().wait(lock, [this]()->bool {
-        std::lock_guard<std::mutex> task_lock(tasks_.GetQueueMutex());
-        return tasks_.GetQueueBuffer().empty() && tasks_.GetLastIdx() == completed_task_ids_.size();
-    });
+    tasks_.WaitAllQueue(lock);
 }
 
 void ThreadPoll::Wait(size_t task_id) {
     std::unique_lock<std::mutex> lock(thread_pool_mutex_);
-
-    tasks_.GetCompletedTaskIDsCv().wait(lock, [this, task_id]()->bool {
-        return completed_task_ids_.find(task_id) != completed_task_ids_.end(); 
-    });
+    tasks_.WaitQueue(task_id, lock);
 }
 
 void ThreadPoll::Stop() {
@@ -46,7 +45,7 @@ void ThreadPoll::Stop() {
 }
 
 void ThreadPoll::WorkerRoutine() {
-    while (true) {
+    while (!end_flag_) {
         auto task = tasks_.Take();
         task(); // TODO exception
     }

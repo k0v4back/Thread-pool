@@ -10,15 +10,17 @@
 template <typename T>
 class UnboundedBlockingMPMCQueue {
 public:
-    void Put(T value) {
+    size_t Put(T value) {
         std::lock_guard<std::mutex> lock(queue_mutex_);
 
         size_t task_id = last_idx_++;
-        buffer_.emplace(std::move(value), task_id);
+        buffer_.emplace_back(std::move(value), task_id);
 
         //Put one element in queue and woke up one thread,
         //which may have been waiting for an element
         not_empty_cv_.notify_one();
+
+        return task_id;
     }
 
     T Take() {
@@ -32,24 +34,27 @@ public:
         return TakeLocked();
     }
 
+    void WaitAllQueue(std::unique_lock<std::mutex>& lock) {
+        completed_task_ids_cv_.wait(lock, [this]()->bool {
+            std::lock_guard<std::mutex> task_lock(queue_mutex_);
+            return buffer_.empty() && last_idx_ == completed_task_ids_.size();
+        });
+    }
+
+    void WaitQueue(size_t task_id, std::unique_lock<std::mutex>& lock) {
+        completed_task_ids_cv_.wait(lock, [this, task_id]()->bool {
+            return completed_task_ids_.find(task_id) != completed_task_ids_.end(); 
+        });
+    }
+
+    bool TaskCompleteQueue(size_t task_id) {
+        if (completed_task_ids_.find(task_id) != completed_task_ids_.end())
+            return true;
+        return false;
+    }
+
     std::condition_variable& GetNotEmptyCv() {
         return not_empty_cv_;
-    }
-
-    std::condition_variable& GetCompletedTaskIDsCv() {
-        return completed_task_ids_cv_;
-    }
-
-    std::mutex& GetQueueMutex() {
-        return queue_mutex_;
-    }
-
-    std::deque<std::pair<T, size_t>>& GetQueueBuffer() const {
-        return buffer_;
-    }
-
-    std::atomic<size_t>& GetLastIdx() const {
-        return buffer_;
     }
 
 private:
@@ -57,13 +62,13 @@ private:
     //assuming that the queue is not empty
     T TakeLocked() {
         assert(!buffer_.empty());
-        T front = std::move(buffer_.front());
+        auto front = std::move(buffer_.front());
         buffer_.pop_front();
 
         completed_task_ids_.insert(front.second);
         completed_task_ids_cv_.notify_all();
 
-        return front;
+        return front.first;
     }
 
 private:
