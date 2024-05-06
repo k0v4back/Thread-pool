@@ -9,6 +9,8 @@
 #include "task.h"
 #include "queue.h"
 
+namespace tp {
+
 class ThreadPoll {
 public:
     explicit ThreadPoll(size_t workers);
@@ -33,3 +35,5 @@ private:
     std::mutex completed_task_ids_mutex_; 
     std::mutex thread_pool_mutex_;
 };
+
+}

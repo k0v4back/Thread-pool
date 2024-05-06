@@ -14,7 +14,7 @@ void sum(std::vector<int>& arr, int& ans) {
 
 void testSum() {
     //Create pool of 3 thread
-    ThreadPoll pool {3};
+    tp::ThreadPoll pool {3};
 
     std::vector<int> s1 = {1, 2, 3};
     int ans1 = 0;
@@ -35,34 +35,44 @@ void testSum() {
         pool.Wait(task_id1);
         std::cout << "task_id1 = " << task_id1 << " result = " << ans1 << std::endl;
     }
+
+    //Wait until thread pool becomes empty
     pool.WaitAll();
 
     std::cout << "task_id2 = " << task_id2 << " result = " << ans2 << std::endl;
     std::cout << "task_id3 = " << task_id3 << " result = " << ans3 << std::endl;
+
+    //Stop all threads
+    //pool.Stop();
 }
 
 void testSharedCounter() {
     //Create pool of 3 thread
-    ThreadPoll pool {3};
+    tp::ThreadPoll pool {3};
 
     size_t shared_counter = 0;
 
     for (size_t i = 0; i < 100500; i++) {
         pool.Submit([&]() {
+            //Some payload
             shared_counter++;
         });
     }
 
+    //Wait until thread pool becomes empty
     pool.WaitAll();
 
     std::cout << "shared_counter = " << shared_counter << std::endl;
     std::this_thread::sleep_for(1s);
     std::cout << "shared_counter = " << shared_counter << std::endl;
+
+    //Stop all threads
+    //pool.Stop();
 }
 
 int main() {
-    std::cout << "----------TEST1----------\n";
-    testSum();
+    // std::cout << "----------TEST1----------\n";
+    // testSum();
 
     std::cout << "\n\n\n----------TEST2----------\n";
     testSharedCounter();

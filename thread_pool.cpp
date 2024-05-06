@@ -3,6 +3,8 @@
 
 #include "thread_pool.h"
 
+namespace tp {
+
 ThreadPoll::ThreadPoll(size_t workers) {
     //Start worker threads
     workers_.reserve(workers);
@@ -49,4 +51,6 @@ void ThreadPoll::WorkerRoutine() {
         auto task = tasks_.Take();
         task(); // TODO exception
     }
+}
+
 }

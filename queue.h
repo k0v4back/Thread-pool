@@ -7,6 +7,8 @@
 #include <atomic>
 #include <unordered_set>
 
+namespace tp {
+
 template <typename T>
 class UnboundedBlockingMPMCQueue {
 public:
@@ -79,3 +81,5 @@ private:
     std::unordered_set<size_t> completed_task_ids_; 
     std::atomic<size_t> last_idx_ {0};
 };
+
+}
