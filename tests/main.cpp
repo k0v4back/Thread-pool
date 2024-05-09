@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 
-#include "../thread_pool.h"
+#include "../src/thread_pool.h"
 
 #include <thread>
 using namespace std::chrono_literals;
