@@ -8,7 +8,7 @@ project(${PROJECT_NAME})
 
 set(SOURCES
         src/thread_pool.cpp
-        tests/main.cpp
+        # tests/main.cpp
 )
 
 set(HEADERS
@@ -17,7 +17,8 @@ set(HEADERS
         src/queue.h
 )
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+# add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 set_target_properties(
         ${PROJECT_NAME} PROPERTIES
         CXX_STANDARD 14
