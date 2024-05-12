@@ -26,14 +26,12 @@ public:
     void Stop();
 
 private:
-    void WorkerRoutine();   //Procedure for each execution thread
+    void WorkerRoutine();   /* Procedure for each execution thread */
 
 private:
-    std::vector<std::thread> workers_;
-    UnboundedBlockingMPMCQueue<Task> tasks_;
-    std::atomic<bool> end_flag_ { false }; //Flag end of thread pool work
-    std::mutex completed_task_ids_mutex_; 
-    std::mutex thread_pool_mutex_;
+    std::vector<std::thread> workers_;          /* Array of threads */
+    UnboundedBlockingMPMCQueue<Task> tasks_;    /* Queue of tasks */
+    std::atomic<bool> end_flag_;                /* Flag end of thread pool work */
 };
 
 }
