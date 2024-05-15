@@ -17,6 +17,11 @@ set(HEADERS
         src/queue.h
 )
 
+# Address sanitizer
+# add_compile_options(-fsanitize=address)
+# add_link_options(-fsanitize=address)
+# add_link_options(-fsanitize=address -static-libasan)
+
 # add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 set_target_properties(

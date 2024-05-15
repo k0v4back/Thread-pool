@@ -43,7 +43,7 @@ void testSum() {
     std::cout << "task_id3 = " << task_id3 << " result = " << ans3 << std::endl;
 
     //Stop all threads
-    //pool.Stop();
+    pool.Stop();
 }
 
 void testSharedCounter() {
@@ -67,12 +67,12 @@ void testSharedCounter() {
     std::cout << "shared_counter = " << shared_counter << std::endl;
 
     //Stop all threads
-    //pool.Stop();
+    pool.Stop();
 }
 
 int main() {
-    // std::cout << "----------TEST1----------\n";
-    // testSum();
+    std::cout << "----------TEST1----------\n";
+    testSum();
 
     std::cout << "\n\n\n----------TEST2----------\n";
     testSharedCounter();

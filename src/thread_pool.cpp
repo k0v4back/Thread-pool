@@ -6,7 +6,6 @@
 namespace tp {
 
 ThreadPoll::ThreadPoll(size_t workers) : end_flag_(false) {
-    std::cout << "ThreadPoll()\n";
     //Start worker threads
     workers_.reserve(workers);
     for (size_t i = 0; i < workers; i++) {
@@ -17,11 +16,7 @@ ThreadPoll::ThreadPoll(size_t workers) : end_flag_(false) {
 }
 
 ThreadPoll::~ThreadPoll() {
-    end_flag_ = true;
-    for (size_t i = 0; i < workers_.size(); i++) {
-        tasks_.GetNotEmptyCv().notify_all();
-        workers_[i].join();
-    }
+    assert(workers_.empty());
 }
 
 size_t ThreadPoll::Submit(Task task) {
@@ -42,12 +37,18 @@ void ThreadPoll::Wait(size_t task_id) {
 }
 
 void ThreadPoll::Stop() {
-    assert(workers_.empty());
+    end_flag_ = true;
+    for (auto& worker: workers_) {
+        tasks_.Abort(end_flag_);
+        if (worker.joinable()) {
+            worker.join();
+        }
+    }
 }
 
 void ThreadPoll::WorkerRoutine() {
     while (!end_flag_) {
-        auto task = tasks_.Take();
+        auto task = tasks_.Take(end_flag_);
         task(); // TODO exception
     }
 }

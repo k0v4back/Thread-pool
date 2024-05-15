@@ -24,12 +24,19 @@ public:
         return task_id;
     }
 
-    T Take() {
+    T Take(std::atomic<bool>& end_flag) {
         std::unique_lock<std::mutex> lock(queue_mutex_);
 
         while (buffer_.empty()) {
-            //Unlock mutex and wait until the queue is not empty
-            workers_cv_.wait(lock);
+            //Unlock mutex and wait until the queue is not empty and thread pool is still running
+
+            // workers_cv_.wait(lock);
+
+            workers_cv_.wait(lock, [this, &end_flag]()->bool {
+                return !buffer_.empty() || end_flag;
+            });
+            // if (end_flag)
+            //     return {};
         }
 
         return TakeLocked();
@@ -57,8 +64,16 @@ public:
         return false;
     }
 
-    std::condition_variable& GetNotEmptyCv() {
+    std::condition_variable& GetWorkersCv() {
         return workers_cv_;
+    }
+
+    void Abort(std::atomic<bool>& end_flag) {
+        std::unique_lock<std::mutex> lock;
+        end_flag = true;
+        buffer_.clear();
+        completed_task_ids_cv_.notify_all();
+        workers_cv_.notify_all();
     }
 
 private:
