@@ -19,7 +19,12 @@ public:
     ThreadPoll(const ThreadPoll&) = delete;
     ThreadPoll& operator=(const ThreadPoll&) = delete;
 
-    size_t Submit(Task task);
+    template <typename Func, typename ...Args>
+    size_t Submit(const Func& task_func, Args&&... args) {
+        int ret = tasks_.Put(task_func, args...);
+        return ret;
+    }
+
     bool TaskComplete(size_t task_id);
     void WaitAll();
     void Wait(size_t task_id);

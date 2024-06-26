@@ -6,16 +6,19 @@
 #include <condition_variable>
 #include <atomic>
 #include <unordered_set>
+#include <future>
 
 namespace tp {
 
 template <typename T>
 class UnboundedBlockingMPMCQueue {
 public:
-    size_t Put(T value) {
+    template <typename Func, typename ...Args>
+    size_t Put(const Func& task_func, Args&&... args) {
         std::lock_guard<std::mutex> lock(queue_mutex_);
         size_t task_id = last_idx_++;
-        buffer_.emplace_back(std::move(value), task_id);
+        // buffer_.emplace_back(std::async(std::launch::deferred, task_func, args...), task_id);
+        buffer_.emplace_back(std::async(std::launch::deferred, task_func, this, args...), task_id);
 
         //Put one element in queue and woke up one thread,
         //which may have been waiting for an element
@@ -24,7 +27,7 @@ public:
         return task_id;
     }
 
-    T Take(std::atomic<bool>& end_flag) {
+    void Take(std::atomic<bool>& end_flag) {
         std::unique_lock<std::mutex> lock(queue_mutex_);
 
         while (buffer_.empty()) {
@@ -39,7 +42,8 @@ public:
             //     return {};
         }
 
-        return TakeLocked();
+        // return TakeLocked();
+        TakeLocked();
     }
 
     void WaitAllQueue() {
@@ -79,15 +83,18 @@ public:
 private:
     //Retrieves an item from the beginning of the queue
     //assuming that the queue is not empty
-    T TakeLocked() {
+    void TakeLocked() {
         assert(!buffer_.empty());
+        // auto front = std::move(buffer_.front());
         auto front = std::move(buffer_.front());
         buffer_.pop_front();
+
+        front.first.get();
 
         completed_task_ids_.insert(front.second);
         completed_task_ids_cv_.notify_all();
 
-        return front.first;
+        // return front.first;
     }
 
 private:

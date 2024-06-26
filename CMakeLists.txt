@@ -4,7 +4,7 @@ project(ThreadPool)
 
 set(SOURCES
         src/thread_pool.cpp
-        # tests/main.cpp
+        tests/main.cpp
 )
 
 # Address sanitizer
@@ -12,11 +12,11 @@ set(SOURCES
 # add_link_options(-fsanitize=address)
 # add_link_options(-fsanitize=address -static-libasan)
 
-# add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-add_library(${PROJECT_NAME}
-        STATIC
-                ${SOURCES}
-)
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+# add_library(${PROJECT_NAME}
+#         STATIC
+#                 ${SOURCES}
+# )
 
 set_target_properties(
         ${PROJECT_NAME} PROPERTIES

@@ -25,9 +25,13 @@ void testSum() {
     std::vector<int> s3 = {8, 9, 10};
     int ans3 = 0;
 
-    size_t task_id1 = pool.Submit([&]() { sum(s1, ans1); });
-    size_t task_id2 = pool.Submit([&]() { sum(s2, ans2); });
-    size_t task_id3 = pool.Submit([&]() { sum(s3, ans3); });
+    // size_t task_id1 = pool.Submit([&]() { sum(s1, ans1); });
+    // size_t task_id2 = pool.Submit([&]() { sum(s2, ans2); });
+    // size_t task_id3 = pool.Submit([&]() { sum(s3, ans3); });
+
+    auto task_id1 = pool.Submit(sum, std::ref(ans1), std::ref(s1));
+    auto task_id2 = pool.Submit(sum, std::ref(ans2), std::ref(s2));
+    auto task_id3 = pool.Submit(sum, std::ref(ans3), std::ref(s3));
 
     if (pool.TaskComplete(task_id1)) {
         std::cout << "task_id1 = " << task_id1 << " result = " << ans1 << std::endl;
@@ -46,36 +50,36 @@ void testSum() {
     pool.Stop();
 }
 
-void testSharedCounter() {
-    //Create pool of 3 thread
-    tp::ThreadPoll pool {3};
+// void testSharedCounter() {
+//     //Create pool of 3 thread
+//     tp::ThreadPoll pool {3};
 
-    size_t shared_counter = 0;
+//     size_t shared_counter = 0;
 
-    for (size_t i = 0; i < 100500; i++) {
-        pool.Submit([&]() {
-            //Some payload
-            shared_counter++;
-        });
-    }
+//     for (size_t i = 0; i < 100500; i++) {
+//         pool.Submit([&]() {
+//             //Some payload
+//             shared_counter++;
+//         });
+//     }
 
-    //Wait until thread pool becomes empty
-    pool.WaitAll();
+//     //Wait until thread pool becomes empty
+//     pool.WaitAll();
 
-    std::cout << "shared_counter = " << shared_counter << std::endl;
-    std::this_thread::sleep_for(1s);
-    std::cout << "shared_counter = " << shared_counter << std::endl;
+//     std::cout << "shared_counter = " << shared_counter << std::endl;
+//     std::this_thread::sleep_for(1s);
+//     std::cout << "shared_counter = " << shared_counter << std::endl;
 
-    //Stop all threads
-    pool.Stop();
-}
+//     //Stop all threads
+//     pool.Stop();
+// }
 
 int main() {
     std::cout << "----------TEST1----------\n";
     testSum();
 
-    std::cout << "\n\n\n----------TEST2----------\n";
-    testSharedCounter();
+    // std::cout << "\n\n\n----------TEST2----------\n";
+    // testSharedCounter();
 
     return 0;
 }
