@@ -7,18 +7,19 @@
 #include <atomic>
 #include <unordered_set>
 #include <future>
+#include <unordered_map>
 
 namespace tp {
 
 template <typename T>
 class UnboundedBlockingMPMCQueue {
 public:
-    template <typename Func, typename ...Args>
-    size_t Put(const Func& task_func, Args&&... args) {
+    template <typename Func, typename ...Args, typename ...FuncTypes>
+    size_t Put(Func(*func)(FuncTypes...), Args&&... args) {
         std::lock_guard<std::mutex> lock(queue_mutex_);
         size_t task_id = last_idx_++;
-        // buffer_.emplace_back(std::async(std::launch::deferred, task_func, args...), task_id);
-        buffer_.emplace_back(std::async(std::launch::deferred, task_func, this, args...), task_id);
+        tasks_info_[task_id] = TaskInfo();
+        buffer_.emplace_back(Task(func, std::forward<Args>(args)...), task_id);
 
         //Put one element in queue and woke up one thread,
         //which may have been waiting for an element
@@ -32,17 +33,11 @@ public:
 
         while (buffer_.empty()) {
             //Unlock mutex and wait until the queue is not empty and thread pool is still running
-
-            // workers_cv_.wait(lock);
-
             workers_cv_.wait(lock, [this, &end_flag]()->bool {
                 return !buffer_.empty() || end_flag;
             });
-            // if (end_flag)
-            //     return {};
         }
 
-        // return TakeLocked();
         TakeLocked();
     }
 
@@ -50,7 +45,7 @@ public:
         std::unique_lock<std::mutex> lock(queue_mutex_);
         completed_task_ids_cv_.wait(lock, [this]()->bool {
             std::lock_guard<std::mutex> task_lock(completed_task_ids_mutex_);
-            return buffer_.empty() && last_idx_ == completed_task_ids_.size();
+            return buffer_.empty() && cnt_completed_tasks_ == last_idx_;
         });
     }
 
@@ -68,8 +63,8 @@ public:
         return false;
     }
 
-    std::condition_variable& GetWorkersCv() {
-        return workers_cv_;
+    void NotifyAllTasks() {
+        workers_cv_.notify_all();
     }
 
     void Abort(std::atomic<bool>& end_flag) {
@@ -85,26 +80,31 @@ private:
     //assuming that the queue is not empty
     void TakeLocked() {
         assert(!buffer_.empty());
-        // auto front = std::move(buffer_.front());
-        auto front = std::move(buffer_.front());
+        std::pair<Task, uint64_t> task = std::move(buffer_.front());
         buffer_.pop_front();
 
-        front.first.get();
+        task.first();
 
-        completed_task_ids_.insert(front.second);
+        if (task.first.has_result()) {
+            tasks_info_[task.second].result = task.first.get_result();
+        }
+        tasks_info_[task.second].status = TaskStatus::completed;
+        ++cnt_completed_tasks_;
+
+        completed_task_ids_.insert(task.second);
         completed_task_ids_cv_.notify_all();
-
-        // return front.first;
     }
 
 private:
-    std::deque<std::pair<T, size_t>> buffer_; //Task and number of task
+    std::deque<std::pair<T, size_t>> buffer_; //Tasks and number of task
     std::mutex queue_mutex_;
     std::mutex completed_task_ids_mutex_;
     std::condition_variable workers_cv_;
     std::condition_variable completed_task_ids_cv_;
     std::unordered_set<size_t> completed_task_ids_; 
     std::atomic<size_t> last_idx_ {0};
+    std::atomic<uint64_t> cnt_completed_tasks_ {0};
+    std::unordered_map<uint64_t, TaskInfo> tasks_info_;
 };
 
 }

@@ -19,9 +19,9 @@ public:
     ThreadPoll(const ThreadPoll&) = delete;
     ThreadPoll& operator=(const ThreadPoll&) = delete;
 
-    template <typename Func, typename ...Args>
-    size_t Submit(const Func& task_func, Args&&... args) {
-        int ret = tasks_.Put(task_func, args...);
+    template <typename Func, typename ...Args, typename ...FuncTypes>
+    size_t Submit(Func(*func)(FuncTypes...), Args&&... args) {
+        int ret = tasks_.Put(func, args...);
         return ret;
     }
 

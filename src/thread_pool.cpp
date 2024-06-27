@@ -21,14 +21,14 @@ ThreadPoll::ThreadPoll(size_t workers) : end_flag_(false) {
 }
 
 ThreadPoll::~ThreadPoll() {
-    assert(workers_.empty());
-}
+    // assert(workers_.empty());
 
-// template <typename Func, typename ...Args>
-// size_t ThreadPoll::Submit(const Func& value, Args&&... args) {
-//     int ret = tasks_.Put(value, args...);
-//     return ret;
-// }
+    end_flag_ = true;
+    tasks_.NotifyAllTasks();
+    for (int i = 0; i < workers_.size(); ++i) {
+        workers_[i].detach();
+    }
+}
 
 bool ThreadPoll::TaskComplete(size_t task_id) {
     return tasks_.TaskCompleteQueue(task_id);
