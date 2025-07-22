@@ -36,15 +36,15 @@ public:
         return TakeLocked();
     }
 
-    void WaitAllQueue(std::unique_lock<std::mutex>& lock) {
-        completed_task_ids_cv_.wait(lock, [this]()->bool {
+    void WaitAllQueue() {
+        completed_task_ids_cv_.wait(wait_mutex_, [this]()->bool {
             std::lock_guard<std::mutex> task_lock(queue_mutex_);
             return buffer_.empty() && last_idx_ == completed_task_ids_.size();
         });
     }
 
-    void WaitQueue(size_t task_id, std::unique_lock<std::mutex>& lock) {
-        completed_task_ids_cv_.wait(lock, [this, task_id]()->bool {
+    void WaitQueue(size_t task_id) {
+        completed_task_ids_cv_.wait(wait_mutex_, [this, task_id]()->bool {
             return completed_task_ids_.find(task_id) != completed_task_ids_.end(); 
         });
     }
@@ -76,6 +76,7 @@ private:
 private:
     std::deque<std::pair<T, size_t>> buffer_; //Task and id of task
     std::mutex queue_mutex_;
+    std::unique_lock<std::mutex> wait_mutex_;
     std::condition_variable workers_cv_;
     std::condition_variable completed_task_ids_cv_;
     std::unordered_set<size_t> completed_task_ids_; 

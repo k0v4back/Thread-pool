@@ -14,7 +14,7 @@ void sum(std::vector<int>& arr, int& ans) {
 
 void testSum() {
     //Create pool of 3 thread
-    tp::ThreadPoll pool {1};
+    tp::ThreadPoll pool {3};
 
     std::vector<int> s1 = {1, 2, 3};
     int ans1 = 0;

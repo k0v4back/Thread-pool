@@ -34,12 +34,12 @@ bool ThreadPoll::TaskComplete(size_t task_id) {
 
 void ThreadPoll::WaitAll() {
     std::unique_lock<std::mutex> lock(thread_pool_mutex_);
-    tasks_.WaitAllQueue(lock);
+    // tasks_.WaitAllQueue();
 }
 
 void ThreadPoll::Wait(size_t task_id) {
     std::unique_lock<std::mutex> lock(thread_pool_mutex_);
-    tasks_.WaitQueue(task_id, lock);
+    // tasks_.WaitQueue(task_id);
 }
 
 void ThreadPoll::Stop() {
