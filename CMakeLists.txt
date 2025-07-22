@@ -1,26 +1,25 @@
 cmake_minimum_required(VERSION 3.22)
 
-set(PROJECT_NAME
-        ThreadPool
-)
+project(ThreadPool)
 
-project(${PROJECT_NAME})
+# Specifies debug and release builds.
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0") # Flags for Debug: enable debug information, no optimizations
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")  # Flags for Release: Maximum Optimization
+
+# Make sure the CMAKE_BUILD_TYPE variable is set (defaults to Debug if not specified)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build: Debug or Release" FORCE)
+endif()
 
 set(SOURCES
-        src/thread_pool.cpp
-        # tests/main.cpp
+    src/thread_pool.cpp
+    tests/main.cpp
 )
 
-set(HEADERS
-        src/thread_pool.h
-        src/task.h
-        src/queue.h
-)
+add_executable(${PROJECT_NAME} ${SOURCES})
 
-# add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 set_target_properties(
-        ${PROJECT_NAME} PROPERTIES
-        CXX_STANDARD 14
-        CXX_STANDARD_REQUIRED ON
+    ${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED ON
 )

@@ -14,7 +14,7 @@ void sum(std::vector<int>& arr, int& ans) {
 
 void testSum() {
     //Create pool of 3 thread
-    tp::ThreadPoll pool {3};
+    tp::ThreadPoll pool {1};
 
     std::vector<int> s1 = {1, 2, 3};
     int ans1 = 0;
@@ -42,8 +42,8 @@ void testSum() {
     std::cout << "task_id2 = " << task_id2 << " result = " << ans2 << std::endl;
     std::cout << "task_id3 = " << task_id3 << " result = " << ans3 << std::endl;
 
-    //Stop all threads
-    //pool.Stop();
+    // Stop all threads
+    pool.Stop();
 }
 
 void testSharedCounter() {
@@ -67,12 +67,12 @@ void testSharedCounter() {
     std::cout << "shared_counter = " << shared_counter << std::endl;
 
     //Stop all threads
-    //pool.Stop();
+    pool.Stop();
 }
 
 int main() {
-    // std::cout << "----------TEST1----------\n";
-    // testSum();
+    std::cout << "----------TEST1----------\n";
+    testSum();
 
     std::cout << "\n\n\n----------TEST2----------\n";
     testSharedCounter();

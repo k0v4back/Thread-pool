@@ -5,11 +5,20 @@ that take tasks out of the queue and execute them in parallel.
 
 ## Compile
 
+### Debug:
 ```bash
 mkdir build
 cd build
-cmake ../
-cmake --build .
+cmake -DCMAKE_BUILD_TYPE=Debug ../
+cmake --build . --config Debug
+```
+
+### Release:
+```bash
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . --config Release
 ```
 
 ## Run

@@ -16,10 +16,10 @@ ThreadPoll::ThreadPoll(size_t workers) {
 }
 
 ThreadPoll::~ThreadPoll() {
-    end_flag_ = true;
-    for (size_t i = 0; i < workers_.size(); i++) {
-        tasks_.GetNotEmptyCv().notify_all();
-        workers_[i].join();
+    for (std::thread& worker : workers_) {
+        if (worker.joinable()) {
+            worker.join();
+        }
     }
 }
 
@@ -43,11 +43,20 @@ void ThreadPoll::Wait(size_t task_id) {
 }
 
 void ThreadPoll::Stop() {
-    assert(workers_.empty());
+    {
+        std::unique_lock<std::mutex> lock(thread_pool_mutex_);
+        end_flag_ = true;
+    }
+    tasks_.GetWorkersCv().notify_all();
 }
 
 void ThreadPoll::WorkerRoutine() {
-    while (!end_flag_) {
+    while (true) {
+        if (end_flag_) {
+            std::cout << "Thread " << std::this_thread::get_id() << " exiting\n";
+            return;
+        }
+
         auto task = tasks_.Take();
         task(); // TODO exception
     }

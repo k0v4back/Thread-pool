@@ -20,7 +20,7 @@ public:
 
         //Put one element in queue and woke up one thread,
         //which may have been waiting for an element
-        not_empty_cv_.notify_one();
+        workers_cv_.notify_one();
 
         return task_id;
     }
@@ -30,7 +30,7 @@ public:
 
         while (buffer_.empty()) {
             //Unlock mutex and wait until the queue is not empty
-            not_empty_cv_.wait(lock);
+            workers_cv_.wait(lock);
         }
 
         return TakeLocked();
@@ -55,8 +55,8 @@ public:
         return false;
     }
 
-    std::condition_variable& GetNotEmptyCv() {
-        return not_empty_cv_;
+    std::condition_variable& GetWorkersCv() {
+        return workers_cv_;
     }
 
 private:
@@ -74,9 +74,9 @@ private:
     }
 
 private:
-    std::deque<std::pair<T, size_t>> buffer_; //Task and number of task
+    std::deque<std::pair<T, size_t>> buffer_; //Task and id of task
     std::mutex queue_mutex_;
-    std::condition_variable not_empty_cv_; //Not empty queue cv
+    std::condition_variable workers_cv_;
     std::condition_variable completed_task_ids_cv_;
     std::unordered_set<size_t> completed_task_ids_; 
     std::atomic<size_t> last_idx_ {0};
