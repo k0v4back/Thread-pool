@@ -39,6 +39,7 @@ void testSum() {
     //Wait until thread pool becomes empty
     pool.WaitAll();
 
+    std::cout << "task_id1 = " << task_id1 << " result = " << ans1 << std::endl;
     std::cout << "task_id2 = " << task_id2 << " result = " << ans2 << std::endl;
     std::cout << "task_id3 = " << task_id3 << " result = " << ans3 << std::endl;
 
@@ -48,7 +49,7 @@ void testSum() {
 
 void testSharedCounter() {
     //Create pool of 3 thread
-    tp::ThreadPoll pool {3};
+    tp::ThreadPoll pool {10};
 
     size_t shared_counter = 0;
 
@@ -71,8 +72,8 @@ void testSharedCounter() {
 }
 
 int main() {
-    std::cout << "----------TEST1----------\n";
-    testSum();
+    // std::cout << "----------TEST1----------\n";
+    // testSum();
 
     std::cout << "\n\n\n----------TEST2----------\n";
     testSharedCounter();
