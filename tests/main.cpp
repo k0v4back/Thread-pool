@@ -48,7 +48,7 @@ void testSum() {
 }
 
 void testSharedCounter() {
-    //Create pool of 3 thread
+    //Create pool of 10 thread
     tp::ThreadPoll pool {10};
 
     size_t shared_counter = 0;
@@ -72,8 +72,8 @@ void testSharedCounter() {
 }
 
 int main() {
-    // std::cout << "----------TEST1----------\n";
-    // testSum();
+    std::cout << "----------TEST1----------\n";
+    testSum();
 
     std::cout << "\n\n\n----------TEST2----------\n";
     testSharedCounter();

@@ -6,19 +6,15 @@
 #include <condition_variable>
 #include <atomic>
 #include <unordered_set>
+#include <optional>
 
 namespace tp {
 
 template <typename T>
 class UnboundedBlockingMPMCQueue {
 public:
-    size_t Put(T value, std::atomic<bool>& endflag) {
+    size_t Put(T value) {
         std::lock_guard<std::mutex> lock(queue_mutex_);
-
-        if (endflag) {
-            // throw std::runtime_error("Cannot take task in stopped thread pool");
-        }
-
         size_t task_id = last_idx_++;
         buffer_.emplace_back(std::move(value), task_id);
 
@@ -29,22 +25,16 @@ public:
         return task_id;
     }
 
-    T Take(std::atomic<bool>& endflag) {
+    std::optional<T> Take() {
         std::unique_lock<std::mutex> lock(queue_mutex_);
 
-        while (buffer_.empty() && !endflag) {
-            std::cout << "1 Take" << std::endl; // Проблема в том, что при нотификации всех потоков мы хотим чтобы они проснули
-                                              // и увидели что программа должна завершиться т.е. endflag выставляется в true
-                                              // но потоки просываются и снова засыпают т.к. очередь пуста
-                                              // т.е. нужно тупо выйти отсюда какием-то образом и не засыпать если endflag == true
-            //Unlock mutex and wait until the queue is not empty
-            workers_cv_.wait(lock);
-        }
+        //Unlock mutex and wait until the queue is not empty or end_flag_ is not true
+        workers_cv_.wait(lock, [this]()->bool {
+            return !buffer_.empty() || end_flag_;
+        });
 
-        std::cout << "2 Take" << std::endl;
-
-        if (endflag) {
-            throw std::runtime_error("Cannot take task in stopped thread pool");
+        if (end_flag_ && buffer_.empty()) {
+            return std::nullopt;
         }
 
         return TakeLocked();
@@ -54,14 +44,13 @@ public:
         std::unique_lock<std::mutex> lock(wait_mutex_);
         completed_task_ids_cv_.wait(lock, [this]()->bool {
             std::lock_guard<std::mutex> task_lock(queue_mutex_);
-            // return buffer_.empty() && last_idx_ == completed_task_ids_.size();
-            std::cout << "buffer_.size() = " <<  buffer_.size() << " last_idx_ = " << last_idx_ << " completed_task_ids_.size() = " << completed_task_ids_.size() << std::endl;
             return buffer_.empty() && last_idx_ == completed_task_ids_.size();
         });
     }
 
     void WaitQueue(size_t task_id) {
         std::unique_lock<std::mutex> lock(wait_mutex_);
+        end_flag_ = true;
         completed_task_ids_cv_.wait(lock, [this, task_id]()->bool {
             return completed_task_ids_.find(task_id) != completed_task_ids_.end(); 
         });
@@ -75,6 +64,12 @@ public:
     }
 
     void NotifyAllWorkers() {
+        workers_cv_.notify_all();
+    }
+
+    void EndWork() {
+        std::lock_guard<std::mutex> lock(queue_mutex_);
+        end_flag_ = true;
         workers_cv_.notify_all();
     }
 
@@ -100,6 +95,7 @@ private:
     std::condition_variable completed_task_ids_cv_;
     std::unordered_set<size_t> completed_task_ids_; 
     std::atomic<size_t> last_idx_ {0};
+    std::atomic<bool> end_flag_ { false }; //Flag end of thread pool work
 };
 
 }
