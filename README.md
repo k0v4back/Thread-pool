@@ -21,14 +21,17 @@ cmake -DCMAKE_BUILD_TYPE=Release ../
 cmake --build . --config Release
 ```
 
-## Run tests 
+## Build and run tests
 
-After build go to build directory and run:
+Build:
+```bash
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=ON ../
+cmake --build . --config Debug
+```
+
+Run
 ```
 ctest
-```
-
-Or just start in build directory:
-```
-./test_ThreadPool
 ```

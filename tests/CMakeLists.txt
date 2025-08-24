@@ -1,0 +1,2 @@
+add_subdirectory(test_shared_counter)
+add_subdirectory(test_sum)

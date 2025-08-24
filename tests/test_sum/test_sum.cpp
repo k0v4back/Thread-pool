@@ -1,11 +1,10 @@
-#include <cstddef>
 #include <iostream>
+#include <thread>
 #include <vector>
-#include <cassert>
+#include <gtest/gtest.h>
 
 #include "thread_pool.h"
 
-#include <thread>
 using namespace std::chrono_literals;
 
 void sum(std::vector<int>& arr, int& ans) {
@@ -14,7 +13,8 @@ void sum(std::vector<int>& arr, int& ans) {
     }
 }
 
-void testSum() {
+TEST(SharedCounter, OneThread)
+{
     //Create pool of 3 thread
     tp::ThreadPoll pool {3};
 
@@ -45,43 +45,11 @@ void testSum() {
     std::cout << "task_id2 = " << task_id2 << " result = " << ans2 << std::endl;
     std::cout << "task_id3 = " << task_id3 << " result = " << ans3 << std::endl;
 
+    EXPECT_EQ(ans1, 6);
+    EXPECT_EQ(ans2, 9);
+    EXPECT_EQ(ans3, 27);
+
+
     // Stop all threads
-    pool.Stop();
-}
-
-void testSharedCounter() {
-    //Create pool of 10 thread
-    tp::ThreadPoll pool {10};
-
-    size_t shared_counter = 0;
-    size_t num = 100500;
-
-    for (size_t i = 0; i < num; i++) {
-        pool.Submit([&]() {
-            //Some payload
-            shared_counter++;
-        });
-    }
-
-    //Wait until thread pool becomes empty
-    pool.WaitAll();
-
-    std::cout << "shared_counter = " << shared_counter << std::endl;
-    std::this_thread::sleep_for(1s);
-    std::cout << "shared_counter = " << shared_counter << std::endl;
-
-    assert(num != shared_counter);
-
-    //Stop all threads
-    pool.Stop();
-}
-
-int main() {
-    std::cout << "----------TEST1----------\n";
-    testSum();
-
-    std::cout << "\n\n\n----------TEST2----------\n";
-    testSharedCounter();
-
-    return 0;
+    pool.Stop(); 
 }

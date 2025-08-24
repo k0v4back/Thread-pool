@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 project(ThreadPool VERSION 0.1.0)
 
+option(ENABLE_TESTS"Build and run tests" OFF)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 # Specifies debug and release builds.
@@ -21,10 +23,17 @@ target_include_directories(ThreadPool_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
 target_compile_features(ThreadPool_lib PUBLIC cxx_std_17)
 
 # Tests
-enable_testing()
+if(ENABLE_TESTS)
+    include(FetchContent)
+    FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+    )
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
 
-add_executable(test_ThreadPool
-    tests/main.cpp
-)
-target_link_libraries(test_ThreadPool PRIVATE ThreadPool_lib) # Use library ThreadPool_lib in test_ThreadPool
-add_test(NAME ThreadPool_test COMMAND test_ThreadPool)
+    enable_testing()
+
+    add_subdirectory(tests)
+endif()
