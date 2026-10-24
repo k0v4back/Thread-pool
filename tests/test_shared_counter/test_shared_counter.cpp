@@ -29,9 +29,6 @@ TEST(SharedCounter, OneThread)
     std::cout << "shared_counter = " << shared_counter << std::endl;
 
     EXPECT_EQ(num, shared_counter);
-
-    //Stop all threads
-    pool.Stop(); 
 }
 
 TEST(SharedCounter, TenThreads)
@@ -57,9 +54,6 @@ TEST(SharedCounter, TenThreads)
     std::cout << "shared_counter = " << shared_counter << std::endl;
 
     EXPECT_NE(num, shared_counter);
-
-    //Stop all threads
-    pool.Stop(); 
 }
 
 TEST(SharedCounter, OneHundredThreads)
@@ -85,7 +79,4 @@ TEST(SharedCounter, OneHundredThreads)
     std::cout << "shared_counter = " << shared_counter << std::endl;
 
     EXPECT_NE(num, shared_counter);
-
-    //Stop all threads
-    pool.Stop(); 
 }

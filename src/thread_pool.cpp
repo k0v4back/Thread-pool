@@ -26,6 +26,8 @@ ThreadPoll::ThreadPoll(size_t workers) {
 }
 
 ThreadPoll::~ThreadPoll() {
+    Stop();
+
     for (std::thread& worker : workers_) {
         if (worker.joinable()) {
             worker.join();
