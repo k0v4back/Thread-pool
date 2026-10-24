@@ -33,7 +33,7 @@ private:
     UnboundedBlockingMPMCQueue<Task> tasks_;
     std::atomic<bool> end_flag_ { false }; //Flag end of thread pool work
     std::mutex completed_task_ids_mutex_; 
-    std::mutex thread_pool_mutex_;
+    std::mutex thread_pool_mutex_; //Protect pool state and Submit() with Stop()
 };
 
 }

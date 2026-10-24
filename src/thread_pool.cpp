@@ -36,6 +36,12 @@ ThreadPoll::~ThreadPoll() {
 }
 
 size_t ThreadPoll::Submit(Task task) {
+    std::lock_guard<std::mutex> lock(thread_pool_mutex_);
+
+    if (end_flag_) {
+        throw std::runtime_error("Thread pool is stopped");
+    }
+
     return tasks_.Put(std::move(task));
 }
 
@@ -45,27 +51,34 @@ bool ThreadPoll::TaskComplete(size_t task_id) {
 }
 
 void ThreadPoll::WaitAll() {
-    std::unique_lock<std::mutex> lock(thread_pool_mutex_);
     tasks_.WaitAllQueue();
 }
 
 void ThreadPoll::Wait(size_t task_id) {
-    std::unique_lock<std::mutex> lock(thread_pool_mutex_);
     tasks_.WaitQueue(task_id);
 }
 
 void ThreadPoll::Stop() {
-    std::unique_lock<std::mutex> lock(thread_pool_mutex_);
     tasks_.EndWork();
 }
 
 void ThreadPoll::WorkerRoutine() {
     while (true) {
-        auto task = tasks_.Take();
-        if (!task) {
+        auto item = tasks_.Take();
+        if (!item) {
             break;
         }
-        (*task)();
+
+        auto& task = item->first;
+        auto task_id = item->second;
+
+        try {
+            task();
+        } catch (...) {
+            throw; // TODO: Fix it
+        }
+
+        tasks_.MarkCompleted(task_id);
     }
 }
 

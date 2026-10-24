@@ -25,7 +25,7 @@ public:
         return task_id;
     }
 
-    std::optional<T> Take() {
+    std::optional<std::pair<T, size_t>> Take() {
         std::unique_lock<std::mutex> lock(queue_mutex_);
 
         //Unlock mutex and wait until the queue is not empty or end_flag_ is not true
@@ -41,7 +41,7 @@ public:
     }
 
     void WaitAllQueue() {
-        std::unique_lock<std::mutex> lock(wait_mutex_);
+        std::unique_lock<std::mutex> lock(queue_mutex_);
         completed_task_ids_cv_.wait(lock, [this]()->bool {
             std::lock_guard<std::mutex> task_lock(queue_mutex_);
             return buffer_.empty() && last_idx_ == completed_task_ids_.size();
@@ -49,8 +49,7 @@ public:
     }
 
     void WaitQueue(size_t task_id) {
-        std::unique_lock<std::mutex> lock(wait_mutex_);
-        end_flag_ = true;
+        std::unique_lock<std::mutex> lock(queue_mutex_);
         completed_task_ids_cv_.wait(lock, [this, task_id]()->bool {
             return completed_task_ids_.find(task_id) != completed_task_ids_.end(); 
         });
@@ -73,10 +72,19 @@ public:
         workers_cv_.notify_all();
     }
 
+    void MarkCompleted(size_t task_id) {
+        {
+            std::lock_guard<std::mutex> lock(queue_mutex_);
+            completed_task_ids_.insert(task_id);
+        }
+
+        completed_task_ids_cv_.notify_all();
+    }
+
 private:
     //Retrieves an item from the beginning of the queue
     //assuming that the queue is not empty
-    T TakeLocked() {
+    std::optional<std::pair<T, size_t>> TakeLocked() {
         assert(!buffer_.empty());
         auto front = std::move(buffer_.front());
         buffer_.pop_front();
@@ -84,13 +92,12 @@ private:
         completed_task_ids_.insert(front.second);
         completed_task_ids_cv_.notify_all();
 
-        return front.first;
+        return front;
     }
 
 private:
     std::deque<std::pair<T, size_t>> buffer_; //Task and id of task
-    std::mutex queue_mutex_;
-    std::mutex wait_mutex_;
+    std::mutex queue_mutex_; //Protect queue of tasks
     std::condition_variable workers_cv_;
     std::condition_variable completed_task_ids_cv_;
     std::unordered_set<size_t> completed_task_ids_; 
