@@ -6,6 +6,13 @@
 namespace tp {
 
 ThreadPoll::ThreadPoll(size_t workers) {
+
+    if (workers == 0) {
+        throw std::invalid_argument(
+            "Thread pool must have at least one worker"
+        );
+    }
+
     try {
         //Start worker threads
         workers_.reserve(workers);
@@ -38,6 +45,10 @@ ThreadPoll::~ThreadPoll() {
 size_t ThreadPoll::Submit(Task task) {
     std::lock_guard<std::mutex> lock(thread_pool_mutex_);
 
+    if (!task) {
+        throw std::invalid_argument("Task must not be empty");
+    }
+
     if (end_flag_) {
         throw std::runtime_error("Thread pool is stopped");
     }
@@ -46,7 +57,6 @@ size_t ThreadPoll::Submit(Task task) {
 }
 
 bool ThreadPoll::TaskComplete(size_t task_id) {
-    std::lock_guard<std::mutex> lock(completed_task_ids_mutex_);
     return tasks_.TaskCompleteQueue(task_id);
 }
 
