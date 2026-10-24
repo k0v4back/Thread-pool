@@ -59,6 +59,13 @@ void ThreadPoll::Wait(size_t task_id) {
 }
 
 void ThreadPoll::Stop() {
+    std::lock_guard<std::mutex> lock(thread_pool_mutex_);
+
+    if (end_flag_) {
+        return;
+    }
+
+    end_flag_ = true; //Set stop flag for ThreadPoll
     tasks_.EndWork();
 }
 

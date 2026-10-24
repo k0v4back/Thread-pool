@@ -68,7 +68,7 @@ public:
 
     void EndWork() {
         std::lock_guard<std::mutex> lock(queue_mutex_);
-        end_flag_ = true;
+        end_flag_ = true; //Set stop flag for QUEUE
         workers_cv_.notify_all();
     }
 
@@ -102,7 +102,7 @@ private:
     std::condition_variable completed_task_ids_cv_;
     std::unordered_set<size_t> completed_task_ids_; 
     std::atomic<size_t> last_idx_ {0};
-    std::atomic<bool> end_flag_ { false }; //Flag end of thread pool work
+    std::atomic<bool> end_flag_ { false }; //Flag end of QUEUE work
 };
 
 }
