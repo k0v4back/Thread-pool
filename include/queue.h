@@ -43,7 +43,6 @@ public:
     void WaitAllQueue() {
         std::unique_lock<std::mutex> lock(queue_mutex_);
         completed_task_ids_cv_.wait(lock, [this]()->bool {
-            std::lock_guard<std::mutex> task_lock(queue_mutex_);
             return buffer_.empty() && last_idx_ == completed_task_ids_.size();
         });
     }
