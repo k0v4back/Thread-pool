@@ -16,10 +16,20 @@ endif()
 
 
 # Create library ThreadPool_lib
-add_library(ThreadPool_lib STATIC
+add_library(ThreadPool_lib
     src/thread_pool.cpp
 )
-target_include_directories(ThreadPool_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_include_directories(ThreadPool_lib
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(ThreadPool_lib
+    PUBLIC
+        Threads::Threads
+)
+
 target_compile_features(ThreadPool_lib PUBLIC cxx_std_17)
 
 # Tests
