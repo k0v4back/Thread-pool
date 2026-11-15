@@ -2,7 +2,8 @@
 
 #include <functional>
 
-namespace tp {
+namespace tp
+{
 
 using Task = std::function<void()>;
 

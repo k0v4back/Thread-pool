@@ -1,6 +1,7 @@
+#include <gtest/gtest.h>
+
 #include <iostream>
 #include <thread>
-#include <gtest/gtest.h>
 
 #include "thread_pool.h"
 
@@ -8,20 +9,23 @@ using namespace std::chrono_literals;
 
 TEST(SharedCounter, OneThread)
 {
-    //Create pool of 1 thread
-    tp::ThreadPoll pool {1};
+    // Create pool of 1 thread
+    tp::ThreadPoll pool{ 1 };
 
     size_t shared_counter = 0;
     size_t num = 100500;
 
-    for (size_t i = 0; i < num; i++) {
-        pool.Submit([&]() {
-            //Some payload
-            shared_counter++;
-        });
+    for (size_t i = 0; i < num; i++)
+    {
+        pool.Submit(
+            [&]()
+            {
+                // Some payload
+                shared_counter++;
+            });
     }
 
-    //Wait until thread pool becomes empty
+    // Wait until thread pool becomes empty
     pool.WaitAll();
 
     std::cout << "shared_counter = " << shared_counter << std::endl;
@@ -33,20 +37,23 @@ TEST(SharedCounter, OneThread)
 
 TEST(SharedCounter, TenThreads)
 {
-    //Create pool of 10 threads
-    tp::ThreadPoll pool {10};
+    // Create pool of 10 threads
+    tp::ThreadPoll pool{ 10 };
 
     size_t shared_counter = 0;
     size_t num = 100500;
 
-    for (size_t i = 0; i < num; i++) {
-        pool.Submit([&]() {
-            //Some payload
-            shared_counter++;
-        });
+    for (size_t i = 0; i < num; i++)
+    {
+        pool.Submit(
+            [&]()
+            {
+                // Some payload
+                shared_counter++;
+            });
     }
 
-    //Wait until thread pool becomes empty
+    // Wait until thread pool becomes empty
     pool.WaitAll();
 
     std::cout << "shared_counter = " << shared_counter << std::endl;
@@ -58,20 +65,23 @@ TEST(SharedCounter, TenThreads)
 
 TEST(SharedCounter, OneHundredThreads)
 {
-    //Create pool of 100 threads
-    tp::ThreadPoll pool {100};
+    // Create pool of 100 threads
+    tp::ThreadPoll pool{ 100 };
 
     size_t shared_counter = 0;
     size_t num = 100500;
 
-    for (size_t i = 0; i < num; i++) {
-        pool.Submit([&]() {
-            //Some payload
-            shared_counter++;
-        });
+    for (size_t i = 0; i < num; i++)
+    {
+        pool.Submit(
+            [&]()
+            {
+                // Some payload
+                shared_counter++;
+            });
     }
 
-    //Wait until thread pool becomes empty
+    // Wait until thread pool becomes empty
     pool.WaitAll();
 
     std::cout << "shared_counter = " << shared_counter << std::endl;

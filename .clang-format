@@ -1,0 +1,43 @@
+BasedOnStyle: Google
+
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+ConstructorInitializerIndentWidth: 4
+
+ColumnLimit: 100
+
+BreakBeforeBraces: Allman
+
+DerivePointerAlignment: false
+PointerAlignment: Left
+ReferenceAlignment: Left
+
+SpaceBeforeParens: ControlStatements
+SpaceAfterCStyleCast: false
+SpacesBeforeTrailingComments: 2
+
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+
+MaxEmptyLinesToKeep: 1
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+SortIncludes: CaseSensitive
+FixNamespaceComments: true
+NamespaceIndentation: None
+Standard: c++20
+
+AccessModifierOffset: 0
+IndentAccessModifiers: true
+
+AlignAfterOpenBracket: Align
+AlignOperands: Align
+PenaltyBreakBeforeFirstCallParameter: 1
+PenaltyBreakOpenParenthesis: 0
+
+Cpp11BracedListStyle: false

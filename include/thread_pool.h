@@ -1,38 +1,40 @@
 #pragma once
 
+#include <atomic>
 #include <iostream>
 #include <thread>
-#include <vector>
-#include <atomic>
 #include <unordered_set>
+#include <vector>
 
-#include "task.h"
 #include "queue.h"
+#include "task.h"
 
-namespace tp {
+namespace tp
+{
 
-class ThreadPoll {
-public:
-    explicit ThreadPoll(size_t workers);
-    ~ThreadPoll();
+class ThreadPoll
+{
+    public:
+        explicit ThreadPoll(size_t workers);
+        ~ThreadPoll();
 
-    ThreadPoll(const ThreadPoll&) = delete;
-    ThreadPoll& operator=(const ThreadPoll&) = delete;
+        ThreadPoll(const ThreadPoll&) = delete;
+        ThreadPoll& operator=(const ThreadPoll&) = delete;
 
-    size_t Submit(Task task);
-    bool TaskComplete(size_t task_id);
-    void WaitAll();
-    void Wait(size_t task_id);
-    void Stop();
+        size_t Submit(Task task);
+        bool TaskComplete(size_t task_id);
+        void WaitAll();
+        void Wait(size_t task_id);
+        void Stop();
 
-private:
-    void WorkerRoutine();   //Procedure for each execution thread
+    private:
+        void WorkerRoutine();  // Procedure for each execution thread
 
-private:
-    std::vector<std::thread> workers_;
-    UnboundedBlockingMPMCQueue<Task> tasks_;
-    bool end_flag_ { false }; //Flag end of thread pool work
-    std::mutex thread_pool_mutex_; //Protect pool state and Submit() with Stop()
+    private:
+        std::vector<std::thread> workers_;
+        UnboundedBlockingMPMCQueue<Task> tasks_;
+        bool end_flag_{ false };        // Flag end of thread pool work
+        std::mutex thread_pool_mutex_;  // Protect pool state and Submit() with Stop()
 };
 
-}
+}  // namespace tp
